@@ -7,23 +7,25 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 type singleton struct {
-	DbConn      *pgx.Conn
+	DbConn      *pgxpool.Pool
 	BackendHost string
 	BackendPort int
 }
 
-var lock = &sync.Mutex{}
-var instance *singleton
+// var lock = &sync.Mutex{}
+// var instance *singleton
+var (
+	instance *singleton
+	once     sync.Once
+)
 
 func GetInstance() *singleton {
-	if instance == nil {
-		lock.Lock()
-		defer lock.Unlock()
+	once.Do(func() {
 		// Load needed variables
 		if err := godotenv.Load(); err != nil {
 			log.Fatal("Couldn't load the .env file. Info:", err)
@@ -45,7 +47,13 @@ func GetInstance() *singleton {
 			log.Fatal("Error while converting the backendPort to an integer")
 		}
 		// Make the connection
-		con, err := pgx.Connect(context.TODO(), dbUrl)
+		config, err := pgxpool.ParseConfig(dbUrl)
+		if err != nil {
+			log.Fatal("Error while parsing the dbUrl to the pgxpool. Info:", err)
+		}
+		config.MaxConns = 3
+		config.MinConns = 1
+		con, err := pgxpool.NewWithConfig(context.Background(), config)
 		if err != nil {
 			log.Fatal("Error while connecting to the database. Info:", err)
 		}
@@ -54,7 +62,6 @@ func GetInstance() *singleton {
 			BackendHost: backendHost,
 			BackendPort: backendPort,
 		}
-		return instance
-	}
+	})
 	return instance
 }
