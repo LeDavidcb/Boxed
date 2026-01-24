@@ -10,6 +10,7 @@ import (
 func main() {
 	singleton := boxed.GetInstance()
 
+	// It setups the controllers and then start the server
 	server := internal.SetupControllers()
 	server.Start(fmt.Sprintf(":%v", singleton.BackendPort))
 }

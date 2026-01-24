@@ -17,13 +17,12 @@ type singleton struct {
 	BackendPort int
 }
 
-// var lock = &sync.Mutex{}
-// var instance *singleton
 var (
 	instance *singleton
 	once     sync.Once
 )
 
+// GetInstance method will return the only instance of the singleton struct
 func GetInstance() *singleton {
 	once.Do(func() {
 		// Load needed variables
