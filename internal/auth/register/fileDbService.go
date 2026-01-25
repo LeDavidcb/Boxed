@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func createUserDb(c *pgxpool.Pool, u *user) error {
+func createUserDb(c *pgxpool.Pool, u *userRegisterRequest) error {
 	user := new(repositories.User)
 	user.ID = uuid.New()
 	user.Username = u.Nickname

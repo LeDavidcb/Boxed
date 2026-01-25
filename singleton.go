@@ -16,6 +16,7 @@ type singleton struct {
 	BackendHost string
 	BackendPort int
 	FolderPath  string
+	JwtSecret   string
 }
 
 var (
@@ -46,6 +47,10 @@ func GetInstance() *singleton {
 		if backendPortRaw == "" {
 			log.Fatal("BACKEND_PORT is empty")
 		}
+		jwtSecret := os.Getenv("JWT_SECRET")
+		if backendPortRaw == "" {
+			log.Fatal("JWT_SECRET is empty")
+		}
 		backendPort, err := strconv.Atoi(backendPortRaw)
 		if err != nil {
 			log.Fatal("Error while converting the backendPort to an integer")
@@ -66,6 +71,7 @@ func GetInstance() *singleton {
 			BackendHost: backendHost,
 			BackendPort: backendPort,
 			FolderPath:  folderPath,
+			JwtSecret:   jwtSecret,
 		}
 	})
 	return instance

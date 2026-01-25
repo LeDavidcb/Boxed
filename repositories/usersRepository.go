@@ -55,3 +55,11 @@ func (s *UserRepo) GetByID(id uuid.UUID) (*User, error) {
 		Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt)
 	return user, err
 }
+
+func (s *UserRepo) GetByEmail(email string) (*User, error) {
+	user := &User{}
+	query := `SELECT id, username, email, password_hash FROM users WHERE email = $1`
+	err := s.db.QueryRow(context.Background(), query, email).
+		Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash)
+	return user, err
+}
