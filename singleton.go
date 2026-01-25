@@ -15,6 +15,7 @@ type singleton struct {
 	DbConn      *pgxpool.Pool
 	BackendHost string
 	BackendPort int
+	FolderPath  string
 }
 
 var (
@@ -32,6 +33,10 @@ func GetInstance() *singleton {
 		dbUrl := os.Getenv("DB_URL")
 		if dbUrl == "" {
 			log.Fatal("DB_URL is empty")
+		}
+		folderPath := os.Getenv("FOLDER_PATH")
+		if folderPath == "" {
+			log.Fatal("FOLDER_PATH is empty")
 		}
 		backendHost := os.Getenv("BACKEND_HOST")
 		if backendHost == "" {
@@ -60,6 +65,7 @@ func GetInstance() *singleton {
 			DbConn:      con,
 			BackendHost: backendHost,
 			BackendPort: backendPort,
+			FolderPath:  folderPath,
 		}
 	})
 	return instance

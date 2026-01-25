@@ -5,6 +5,7 @@ CREATE TABLE users (
   username TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
+  folder_path TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

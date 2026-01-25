@@ -9,6 +9,7 @@ import (
 
 func main() {
 	singleton := boxed.GetInstance()
+	defer singleton.DbConn.Close()
 
 	// It setups the controllers and then start the server
 	server := internal.SetupControllers()
