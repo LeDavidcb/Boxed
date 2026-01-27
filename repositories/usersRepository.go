@@ -52,7 +52,7 @@ func (s *UserRepo) GetByID(id uuid.UUID) (*User, error) {
         FROM users
         WHERE id = $1`
 	err := s.db.QueryRow(context.Background(), query, id).
-		Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt)
+		Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt, &user.FolderPath)
 	return user, err
 }
 
