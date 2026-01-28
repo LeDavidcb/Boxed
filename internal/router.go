@@ -28,6 +28,7 @@ func SetupControllers() *echo.Echo {
 	validated.Use(jwtMiddleware.Middleware)
 	validated.GET("/h", health.Hello)
 	validated.POST("/upload-file", files.SendFile)
+	validated.POST("/upload-files", files.SendFiles)
 	return router
 
 }
