@@ -29,6 +29,8 @@ func SetupControllers() *echo.Echo {
 	validated.GET("/h", health.Hello)
 	validated.POST("/upload-file", files.SendFile)
 	validated.POST("/upload-files", files.SendFiles)
+	validated.GET("/get-file", files.GetFile)
+	validated.DELETE("/delete-file", files.DeleteFile)
 	return router
 
 }

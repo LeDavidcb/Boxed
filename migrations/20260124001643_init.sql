@@ -26,7 +26,7 @@ CREATE TABLE files (
   size BIGINT NOT NULL,
   mime_type TEXT NOT NULL,
   thumbnail_path TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
 );
 -- +goose StatementEnd
 

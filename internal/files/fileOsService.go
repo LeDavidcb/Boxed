@@ -32,3 +32,10 @@ func saveFile(fpath string, file *multipart.FileHeader) error {
 func createAndSaveThumbnail(fpath string) {
 	log.Println("#### TODO FUNC WAS CALLED, createAndSaveThumbnail().", fpath)
 }
+func deleteFile(fpath string) {
+	err := os.RemoveAll(fpath)
+	if err != nil {
+		log.Println("Fatal error: coudln't remove the following file:", fpath)
+		// maybe re-add the entry that was deleted in the database.
+	}
+}
