@@ -1,7 +1,7 @@
 package refresh
 
 import (
-	"log"
+	"time"
 
 	boxed "github.com/David/Boxed"
 	"github.com/David/Boxed/internal/common/types"
@@ -16,15 +16,17 @@ func ReSignJwt(id uuid.UUID) (string, error) {
 
 	user, err := ur.GetByID(id)
 	if err != nil {
-		log.Println("ERRORR WhiLE GETTING ID:", err)
 		return "", err
 	}
-	claims := new(types.ResponseClaims)
-	claims.Name = user.Username
-	claims.Subject = user.ID.String()
+	claims := &types.ResponseClaims{
+		Name: user.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			Subject:   user.ID.String(),
+		},
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	sig, err := token.SignedString([]byte(boxed.GetInstance().JwtSecret))
-	log.Println("ERRORR WhiLE GETTING ID:", err)
 	return sig, err
 
 }

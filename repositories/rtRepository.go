@@ -108,7 +108,7 @@ func (r *RefreshTokensRepo) GetByHashToken(h string) (*RefreshToken, error) {
 	}
 	return response, nil
 }
-func (r *RefreshTokensRepo) RegenerateToken(h string) (*struct {
+func (r *RefreshTokensRepo) RegenerateToken(h string, tr *pgx.Tx) (*struct {
 	Useruuid uuid.UUID
 	NewHash  string
 }, error) {
@@ -125,7 +125,7 @@ func (r *RefreshTokensRepo) RegenerateToken(h string) (*struct {
 	token.CreatedAt = time.Now()
 	token.ExpiresAt = time.Now().Add(time.Hour * 24 * 7)
 	// Update it to the database.
-	_, err = r.db.Exec(context.Background(), "UPDATE refresh_tokens SET token_hash = $1, created_at = $2, expires_at = $3 WHERE id = $4", token.TokenHash, token.CreatedAt, token.ExpiresAt, token.ID)
+	_, err = (*tr).Exec(context.Background(), "UPDATE refresh_tokens SET token_hash = $1, created_at = $2, expires_at = $3 WHERE id = $4", token.TokenHash, token.CreatedAt, token.ExpiresAt, token.ID)
 	return &struct {
 		Useruuid uuid.UUID
 		NewHash  string
