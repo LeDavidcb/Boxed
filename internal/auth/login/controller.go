@@ -17,6 +17,15 @@ type loginResponse struct {
 	RefreshToken string `json:"refresh-token"`
 }
 
+// LoginController manages user login by validating credentials and returning a signed JWT along with a refresh token.
+//
+// Returns:
+//   - Responds with HTTP 200 (OK) and `SignedJwt` and `RefreshToken` on successful authentication.
+//   - Responds with appropriate HTTP error codes if credentials are invalid or required fields are missing.
+//
+// Errors:
+//   - 400 Bad Request for invalid fields or missing data.
+//   - 415 Unsupported Media Type for missing or incorrect Content-Type header.
 func LoginController(c *echo.Context) error {
 	defer c.Request().Body.Close()
 	var con *pgxpool.Pool = boxed.GetInstance().DbConn

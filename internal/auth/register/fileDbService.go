@@ -9,6 +9,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// createUserDb creates a new user in the database with the given registration details.
+// This includes hashing the password, assigning a unique ID, generating a folder path, and saving the user record.
+//
+// Parameters:
+//   - c (*pgxpool.Pool): A database connection pool.
+//   - u (*userRegisterRequest): Struct containing the nickname, email, and raw password of the new user.
+//
+// Returns:
+//   - error: An error if the user creation process (e.g., password hashing, folder creation, or database insertion) fails.
 func createUserDb(c *pgxpool.Pool, u *userRegisterRequest) error {
 	user := new(repositories.User)
 	user.ID = uuid.New()

@@ -10,6 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// ReSignJwt creates a new JWT for a user identified by their UUID.
+// This function retrieves the user's information from the database, constructs the JWT claims,
+// and signs the token with a secret key.
+//
+// Parameters:
+//   - id (uuid.UUID): The UUID of the user for whom the JWT is created.
+//
+// Returns:
+//   - (string, error): The newly signed JWT as a string; an error if token signing or database access fails.
+//
+// Errors:
+//   - Returns an error if the user does not exist in the database.
+//   - Returns an error if signing the token fails.
 func ReSignJwt(id uuid.UUID) (string, error) {
 	con := boxed.GetInstance().DbConn
 	ur := repositories.NewUserRepo(con)

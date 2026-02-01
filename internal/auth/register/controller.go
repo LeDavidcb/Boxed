@@ -15,6 +15,16 @@ type userRegisterRequest struct {
 	Password string `json:"Password"`
 }
 
+// RegisterController handles user registration by validating incoming data and creating a new user in the database.
+//
+// Returns:
+//   - Responds with HTTP 201 (Created) upon successful user registration.
+//   - Responds with appropriate HTTP error codes for validation or database failures.
+//
+// Errors:
+//   - 400 Bad Request for missing or invalid fields.
+//   - 415 Unsupported Media Type for incorrect Content-Type header.
+//   - 500 Internal Server Error for database-related errors.
 func RegisterController(c *echo.Context) error {
 	defer c.Request().Body.Close()
 	var con *pgxpool.Pool = boxed.GetInstance().DbConn

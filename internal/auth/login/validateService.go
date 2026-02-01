@@ -15,6 +15,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// validate checks user credentials by comparing the provided password and stored hashed password.
+// If credentials are valid, it generates a signed JWT and a refresh token.
+//
+// Parameters:
+//   - u (*userLoginRequest): The user-provided login details, which include an email and password.
+//   - c (*pgxpool.Pool): The database connection pool.
+//
+// Returns:
+//   - (*loginResponse, error): A struct containing the signed JWT and refresh token on success; error otherwise.
+//
+// Errors:
+//   - Returns an error if user credentials do not match or if database access fails.
 func validate(u *userLoginRequest, c *pgxpool.Pool) (*loginResponse, error) {
 	repo := repositories.NewUserRepo(c)
 	user, err := repo.GetByEmail(u.Email)

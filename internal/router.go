@@ -9,7 +9,6 @@ import (
 	"github.com/David/Boxed/internal/auth/register"
 	"github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/internal/files"
-	"github.com/David/Boxed/internal/health"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -28,7 +27,6 @@ func SetupControllers() *echo.Echo {
 	jwtMiddleware := types.NewJwtMiddleware(key, jwt.SigningMethodHS256)
 	validated := router.Group("/api") // Temporarily commented out
 	validated.Use(jwtMiddleware.Middleware)
-	validated.GET("/", health.Hello)
 	validated.POST("/upload-file", files.SendFile)
 	validated.POST("/upload-files", files.SendFiles)
 	validated.GET("/get-file", files.GetFile)

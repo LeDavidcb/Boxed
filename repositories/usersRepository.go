@@ -32,6 +32,13 @@ func NewUserRepo(d *pgxpool.Pool) *UserRepo {
 }
 
 // Creates an user in the `db`.
+// Create inserts a new user into the `users` table.
+//
+// Parameters:
+//   - u (*User): The user to insert with fields for ID, username, email, hashed password, etc.
+//
+// Returns:
+//   - error: An error if the operation does not succeed.
 func (s *UserRepo) Create(u *User) error {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
@@ -44,7 +51,13 @@ func (s *UserRepo) Create(u *User) error {
 
 }
 
-// Gets an User from the `db`.
+// GetByID retrieves a user from the `users` table by their unique ID.
+//
+// Parameters:
+//   - id (uuid.UUID): The unique identifier for the user.
+//
+// Returns:
+//   - (*User, error): A reference to the user object if found; otherwise, an error.
 func (s *UserRepo) GetByID(id uuid.UUID) (*User, error) {
 	user := &User{}
 	query := `

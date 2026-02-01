@@ -42,6 +42,13 @@ func NewRefreshTokensRepo(db *pgxpool.Pool) *RefreshTokensRepo {
 }
 
 // Create inserts a new refresh token record in the "refresh_tokens" table.
+// Create inserts a new record into the `refresh_tokens` table.
+//
+// Parameters:
+//   - token (*RefreshToken): A reference to the refresh token to insert.
+//
+// Returns:
+//   - error: An error if the operation fails.
 func (r *RefreshTokensRepo) Create(token *RefreshToken) error {
 	if token.ID == uuid.Nil {
 		token.ID = uuid.New()
@@ -108,6 +115,19 @@ func (r *RefreshTokensRepo) GetByHashToken(h string) (*RefreshToken, error) {
 	}
 	return response, nil
 }
+
+// RegenerateToken generates a new refresh token for a user based on their existing refresh token hash.
+// It updates the token hash, the creation timestamp, and the expiration timestamp in the database transaction.
+//
+// Parameters:
+//   - h (string): The hashed value of the existing refresh token.
+//   - tr (*pgx.Tx): The current database transaction used for atomic updates.
+//
+// Returns:
+//   - (*struct { Useruuid uuid.UUID; NewHash string }, error):
+//   - Useruuid (uuid.UUID): The UUID of the user associated with the refresh token.
+//   - NewHash (string): The new hashed refresh token value.
+//   - error: An error if the provided hash is invalid or if the database transaction fails.
 func (r *RefreshTokensRepo) RegenerateToken(h string, tr *pgx.Tx) (*struct {
 	Useruuid uuid.UUID
 	NewHash  string

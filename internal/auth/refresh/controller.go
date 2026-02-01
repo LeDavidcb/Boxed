@@ -11,6 +11,16 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// RefreshToken handles the process of refreshing a user's JWT by validating the provided refresh token.
+// It generates a new access token (JWT) and a new refresh token, while ensuring transactional atomicity for database operations.
+//
+// Returns:
+//   - Responds with HTTP 200 (OK) along with the new JWT and refresh token on success.
+//   - Responds with appropriate HTTP status errors if token invalid, expired, or database operations fail.
+//
+// Errors:
+//   - 400 Bad Request if refresh token is invalid or expired.
+//   - 500 Internal Server Error for database or JWT generation failures.
 func RefreshToken(c *echo.Context) error {
 	// Get the refreshToken
 	rt := c.Request().Header.Get("refresh-token")

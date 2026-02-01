@@ -13,6 +13,12 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// SendFile uploads a single file for the authenticated user and saves both the file and its metadata to disk and the database.
+//
+// Returns:
+//   - Responds with HTTP 201 (Created) on success.
+//   - Responds with HTTP 400 (Bad Request) if the file or user info is invalid.
+//   - Returns an error if saving the file or metadata fails.
 func SendFile(c *echo.Context) error {
 	db := boxed.GetInstance().DbConn
 	ur := repositories.NewUserRepo(db)
@@ -57,6 +63,11 @@ func SendFile(c *echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
+// SendFiles allows authenticated users to upload multiple files at once, saving file data and metadata to database and disk.
+//
+// Returns:
+//   - Responds with HTTP 201 (Created) after successfully processing all files.
+//   - Responds with HTTP 400 (Bad Request) if form data or file inputs are invalid.
 func SendFiles(c *echo.Context) error {
 	db := boxed.GetInstance().DbConn
 	ur := repositories.NewUserRepo(db)
@@ -116,6 +127,13 @@ func SendFiles(c *echo.Context) error {
 
 	return c.NoContent(http.StatusCreated)
 }
+
+// GetFile retrieves metadata for a specific file identified by the UUID provided in the request header.
+//
+// Returns:
+//   - Responds with HTTP 200 (OK) and the file metadata as JSON.
+//   - Responds with HTTP 400 (Bad Request) if the UUID is invalid or the file could not be found.
+//   - Returns an error if there are issues querying the database.
 func GetFile(c *echo.Context) error {
 	id := c.Request().Header.Get("uuid")
 	if id == "" {
@@ -136,6 +154,12 @@ func GetFile(c *echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, f)
 }
+
+// DeleteFile removes a file identified by its UUID, along with its metadata, from both the database and storage.
+//
+// Returns:
+//   - Responds with HTTP 200 (OK) for successful deletion.
+//   - Responds with HTTP 400 (Bad Request) if the UUID is invalid or the file does not exist.
 func DeleteFile(c *echo.Context) error {
 	id := c.Request().Header.Get("uuid")
 	if id == "" {
@@ -164,6 +188,12 @@ func DeleteFile(c *echo.Context) error {
 	go deleteFile(f.StoragePath)
 	return c.NoContent(http.StatusOK)
 }
+
+// GetFiles retrieves all files (Metadata) owned by the authenticated user and returns their metadata.
+//
+// Returns:
+//   - Responds with HTTP 200 (OK) along with a JSON payload containing file metadata.
+//   - Responds with HTTP 404 (Not Found) if no files exist for the user.
 func GetFiles(c *echo.Context) error {
 	user, err := echo.ContextGet[*types.ResponseClaims](c, "user")
 	if err != nil {
@@ -190,6 +220,14 @@ func GetFiles(c *echo.Context) error {
 	}
 	return c.JSON(200, content)
 }
+
+// ServeFile streams a requested file to the user based on its UUID.
+// Authorization is validated to ensure the requesting user owns the file.
+//
+// Returns:
+//   - Responds with the file content if successful.
+//   - Responds with HTTP 403 (Forbidden) if the user is not authorized.
+//   - Responds with HTTP 400 (Bad Request) or HTTP 401 (Unauthorized) based on validation errors.
 func ServeFile(c *echo.Context) error {
 	// Extract file UUID from path parameter
 	id := c.Request().Header.Get("uuid")

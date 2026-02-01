@@ -39,6 +39,13 @@ func NewFilesRepo(db *pgxpool.Pool) *FilesRepo {
 }
 
 // Create inserts a new file record in the "files" table.
+// Create adds a new file entry into the `files` table.
+//
+// Parameters:
+//   - file (*File): The file metadata to insert.
+//
+// Returns:
+//   - error: An error if database insertion fails.
 func (r *FilesRepo) Create(file *File) error {
 	if file.ID == uuid.Nil {
 		file.ID = uuid.New()
@@ -52,6 +59,13 @@ func (r *FilesRepo) Create(file *File) error {
 }
 
 // GetByID retrieves a file record by its ID.
+// GetByID retrieves a file entry by its unique ID.
+//
+// Parameters:
+//   - id (uuid.UUID): The unique identifier for the file record.
+//
+// Returns:
+//   - (*File, error): A pointer to the file's metadata if found; otherwise, an error.
 func (r *FilesRepo) GetByID(id uuid.UUID) (*File, error) {
 	file := &File{}
 	query := `SELECT id, owner_id, original_name, storage_path, size, mime_type, thumbnail_path, created_at
