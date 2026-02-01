@@ -5,6 +5,7 @@ import (
 
 	boxed "github.com/David/Boxed"
 	"github.com/David/Boxed/internal/auth/login"
+	"github.com/David/Boxed/internal/auth/refresh"
 	"github.com/David/Boxed/internal/auth/register"
 	"github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/internal/files"
@@ -22,14 +23,17 @@ func SetupControllers() *echo.Echo {
 	router.Use(middleware.RequestLogger())
 	router.GET("/auth/login", login.LoginController)
 	router.GET("/auth/register", register.RegisterController)
+	router.GET("/auth/refresh", refresh.RefreshToken)
 
 	jwtMiddleware := types.NewJwtMiddleware(key, jwt.SigningMethodHS256)
 	validated := router.Group("/api") // Temporarily commented out
 	validated.Use(jwtMiddleware.Middleware)
-	validated.GET("/h", health.Hello)
+	validated.GET("/", health.Hello)
 	validated.POST("/upload-file", files.SendFile)
 	validated.POST("/upload-files", files.SendFiles)
 	validated.GET("/get-file", files.GetFile)
+	validated.GET("/get-files", files.GetFiles)
+	validated.GET("/serve-file", files.ServeFile)
 	validated.DELETE("/delete-file", files.DeleteFile)
 	return router
 

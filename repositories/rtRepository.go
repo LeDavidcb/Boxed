@@ -2,9 +2,14 @@ package repositories
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"log"
 	"time"
 
+	"github.com/David/Boxed/internal/common/fn"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -82,4 +87,47 @@ func (r *RefreshTokensRepo) RevokeByID(id uuid.UUID) error {
 	query := "UPDATE refresh_tokens SET revoked = true WHERE id = $1"
 	_, err := r.db.Exec(context.Background(), query, id)
 	return err
+}
+func (r *RefreshTokensRepo) GetByHashToken(h string) (*RefreshToken, error) {
+	if h == "" {
+		return nil, errors.New("token hash must not be empty")
+	}
+	log.Println("PROVIDED H", h)
+	query := "SELECT id, user_id, token_hash, expires_at, created_at FROM refresh_tokens WHERE token_hash = $1"
+	row := r.db.QueryRow(context.Background(), query, h)
+	response := &RefreshToken{}
+	err := row.Scan(&response.ID, &response.UserID, &response.TokenHash, &response.ExpiresAt, &response.CreatedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			// No rows found; handle differently
+			return nil, fmt.Errorf("refresh token not found for hash: %s", h)
+		}
+		// Other database errors
+		log.Printf("Database error fetching token by hash: %v", err)
+		return nil, err
+	}
+	return response, nil
+}
+func (r *RefreshTokensRepo) RegenerateToken(h string) (*struct {
+	Useruuid uuid.UUID
+	NewHash  string
+}, error) {
+	token, err := r.GetByHashToken(h)
+	if err != nil {
+		return nil, err
+	}
+	hash, err := fn.GenerateRTHash(32)
+	if err != nil {
+		return nil, err
+	}
+	// Set
+	token.TokenHash = hash
+	token.CreatedAt = time.Now()
+	token.ExpiresAt = time.Now().Add(time.Hour * 24 * 7)
+	// Update it to the database.
+	_, err = r.db.Exec(context.Background(), "UPDATE refresh_tokens SET token_hash = $1, created_at = $2, expires_at = $3 WHERE id = $4", token.TokenHash, token.CreatedAt, token.ExpiresAt, token.ID)
+	return &struct {
+		Useruuid uuid.UUID
+		NewHash  string
+	}{Useruuid: token.UserID, NewHash: hash}, err
 }

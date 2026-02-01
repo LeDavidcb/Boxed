@@ -164,3 +164,56 @@ func DeleteFile(c *echo.Context) error {
 	go deleteFile(f.StoragePath)
 	return c.NoContent(http.StatusOK)
 }
+func GetFiles(c *echo.Context) error {
+	user, err := echo.ContextGet[*types.ResponseClaims](c, "user")
+	if err != nil {
+		c.NoContent(http.StatusInternalServerError)
+		return echo.ErrUnauthorized.Wrap(err)
+	}
+	uid, err := uuid.Parse(user.Subject)
+	if err != nil {
+		c.String(http.StatusNotFound, "No User with that uuid.")
+		return echo.ErrUnauthorized.Wrap(err)
+	}
+	frepo := repositories.NewFilesRepo(boxed.GetInstance().DbConn)
+	files, err := frepo.GetByOwnerID(uid)
+	if err != nil {
+		c.NoContent(http.StatusNotFound)
+		return echo.ErrUnauthorized.Wrap(err)
+	}
+	content := struct {
+		Length int `json:"length"`
+		Files  any `json:"files"`
+	}{
+		Length: len(files),
+		Files:  files,
+	}
+	return c.JSON(200, content)
+}
+func ServeFile(c *echo.Context) error {
+	// Extract file UUID from path parameter
+	id := c.Request().Header.Get("uuid")
+	if id == "" {
+		c.String(http.StatusBadRequest, "No uuid was provided.")
+		return fmt.Errorf("No uuid file was provided.")
+	}
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		c.String(http.StatusBadRequest, "The uuid provided was not valid.")
+		return fmt.Errorf("Bad uuid. %v", err)
+	}
+	// Verify user authorization
+	userClaims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
+	if err != nil {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	userID, _ := uuid.Parse(userClaims.Subject)
+	// Query file details
+	fileRepo := repositories.NewFilesRepo(boxed.GetInstance().DbConn)
+	file, err := fileRepo.GetByID(uid)
+	if err != nil || file.OwnerID != userID {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied or file not found"})
+	}
+	// Serve the file
+	return c.File(file.StoragePath)
+}

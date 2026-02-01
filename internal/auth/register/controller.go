@@ -1,6 +1,7 @@
 package register
 
 import (
+	"fmt"
 	"net/http"
 
 	boxed "github.com/David/Boxed"
@@ -23,12 +24,15 @@ func RegisterController(c *echo.Context) error {
 	}
 	err := echo.BindBody(c, &user)
 	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("Error at the provided body: %v", err))
 		return echo.NewHTTPError(http.StatusBadRequest, "")
 	}
 	if user.Nickname == "" || user.Email == "" || user.Password == "" {
+		c.String(http.StatusBadRequest, fmt.Sprintf("Error at the provided body: %v", err))
 		return c.NoContent(http.StatusBadRequest)
 	}
 	if err := createUserDb(con, &user); err != nil {
+		c.String(http.StatusInternalServerError, "Couldn't create the user.")
 		return err
 	}
 	return c.NoContent(http.StatusCreated)

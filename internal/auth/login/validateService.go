@@ -6,9 +6,11 @@ import (
 	"time"
 
 	boxed "github.com/David/Boxed"
+	"github.com/David/Boxed/internal/common/fn"
 	"github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/repositories"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,5 +39,23 @@ func validate(u *userLoginRequest, c *pgxpool.Pool) (*loginResponse, error) {
 		log.Printf("[ERROR] Token signing failed: %v\n", err)
 		return nil, err
 	}
-	return &loginResponse{SignedJwt: sig}, nil
+	// Generate the refreshToken and save it to the database
+	hash, err := fn.GenerateRTHash(32)
+	if err != nil {
+		return nil, err
+	}
+	rtr := repositories.NewRefreshTokensRepo(boxed.GetInstance().DbConn)
+	err = rtr.Create(&repositories.RefreshToken{
+		ID:        uuid.New(),
+		TokenHash: hash,
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(time.Hour * 24 * 7),
+		UserID:    user.ID,
+		Revoked:   false,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &loginResponse{SignedJwt: sig, RefreshToken: hash}, nil
 }
