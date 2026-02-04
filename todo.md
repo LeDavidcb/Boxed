@@ -11,10 +11,12 @@
 - [x] get files -- working
 - [x] get-full-file 
 - [x] Download file -- working
-- [ ] Refresh tokens
-- [ ] better error handling in the auth services. -- working
-- [ ] generate some documentation -- gpt
-- [ ] make the readme
+- [x] Refresh tokens
+- [x] better error handling in the auth services. -- working
+- [x] generate some documentation -- gpt
+- [x] make the readme -- wanna say this is going to be tomorrow
+
+- [ ] remove checks for BackEndHOSt
 
 - due: 1-2 feb -- maybe i could do about 90% of the features today.
 

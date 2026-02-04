@@ -13,7 +13,6 @@ import (
 
 type singleton struct {
 	DbConn      *pgxpool.Pool
-	BackendHost string
 	BackendPort int
 	FolderPath  string
 	JwtSecret   string
@@ -39,10 +38,7 @@ func GetInstance() *singleton {
 		if folderPath == "" {
 			log.Fatal("FOLDER_PATH is empty")
 		}
-		backendHost := os.Getenv("BACKEND_HOST")
-		if backendHost == "" {
-			log.Fatal("BACKEND_HOST is empty")
-		}
+
 		backendPortRaw := os.Getenv("BACKEND_PORT")
 		if backendPortRaw == "" {
 			log.Fatal("BACKEND_PORT is empty")
@@ -68,7 +64,6 @@ func GetInstance() *singleton {
 		}
 		instance = &singleton{
 			DbConn:      con,
-			BackendHost: backendHost,
 			BackendPort: backendPort,
 			FolderPath:  folderPath,
 			JwtSecret:   jwtSecret,
