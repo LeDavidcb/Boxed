@@ -14,7 +14,7 @@ To clone and run this project locally, follow the steps below:
    cd Boxed
    ```
 
-2. Install dependencies with your package manager (example for Go):
+2. Install dependencies
    ```bash
    go mod tidy
    ```
