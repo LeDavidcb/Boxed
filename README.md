@@ -1,6 +1,7 @@
 # Boxed
-
 ### Boxed is a lightweight, very simple self-hosted file management system
+
+_This project is a work-in-progress. A rewrite is underway to improve and reorganize the project structure._
 
 ---
 ## Installation 
@@ -37,14 +38,6 @@ JWT_SECRET: JSON Web Token password to sign tokens.
    go run ./cmd/api/main.go
    ```
 ---
-
-
-## API Documentation 
-
-For comprehensive details on the API routes exposed by Boxed, including their input, output, and descriptions, please refer to the [API Routes Documentation](./API_ROUTES.md).
-
----
-
 
 ## License 
 
