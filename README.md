@@ -25,13 +25,12 @@ To clone and run this project locally, follow the steps below:
    ```
 
 4. Set up the .env file via a text editor.
-```bash
-
-DB_URL: Database connection URL.
-BACKEND_PORT: Server port.
-FOLDER_PATH: Folder where the server is going to save files.
-JWT_SECRET: JSON Web Token password to sign tokens.
-```
+   ```bash
+   DB_URL: Database connection URL.
+   BACKEND_PORT: Server port.
+   FOLDER_PATH: Folder where the server is going to save files.
+   JWT_SECRET: JSON Web Token password to sign tokens.
+   ```
 
 5. Run the project:
    ```bash
