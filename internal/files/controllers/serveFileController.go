@@ -39,8 +39,11 @@ func ServeFileController(c *echo.Context) error {
 	// Query file details
 	fileRepo := repositories.NewFilesRepo(boxed.GetInstance().DbConn)
 	file, err := fileRepo.GetByID(uid)
-	if err != nil || file.OwnerID != userID {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied or file not found"})
+	if file.OwnerID != userID {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied"})
+	}
+	if err != nil {
+		return c.JSON(http.StatusForbidden, map[string]string{"error": "file not found"})
 	}
 	// Serve the file
 	return c.File(file.StoragePath)

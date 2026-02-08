@@ -30,6 +30,7 @@ func SetupControllers() *echo.Echo {
 	validated.GET("/get-file", files.GetFileController)
 	validated.GET("/get-files", files.GetFilesController)
 	validated.GET("/serve-file", files.ServeFileController)
+	validated.GET("/serve-thumbnail", files.ServeThumbnailController)
 	validated.DELETE("/delete-file", files.DeleteFileController)
 	return router
 
