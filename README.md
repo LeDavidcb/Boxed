@@ -46,7 +46,7 @@ This project uses a [LICENSE](LICENSE) file. Please check the details before usi
 
 ## Future Plans 
 
-- [ ] **Thumbnails**
+- [x] **Thumbnails**
   Enhance file metadata retrieval to include thumbnail IDs for compatible file types (e.g., videos, images) when accessed through relevant API endpoints.
 
 - [ ] **Frontend**
