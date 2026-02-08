@@ -5,6 +5,7 @@ import (
 	"mime"
 	"net/http"
 	"path"
+	"strings"
 
 	boxed "github.com/David/Boxed"
 	"github.com/David/Boxed/internal/common/types"
@@ -47,16 +48,24 @@ func SendFileController(c *echo.Context) error {
 	typet, _ := mime.ExtensionsByType(m)
 	fileId := uuid.New()
 	filename := fmt.Sprintf("%v%v", fileId.String(), typet[0])
+	originalName := strings.Split(file.Filename, ".")[0]
 	filePath := path.Join(user.FolderPath, filename)
-	thumbnailPath := path.Join(user.FolderPath, fmt.Sprintf("/thumbnail/%v", filename))
 	// Create the file to the os
 	err = services.SaveFile(filePath, file)
 	if err != nil {
 		return err
 	}
-	// TODO BEHAVIOUR
-	go services.CreateAndSaveThumbnail(thumbnailPath)
-	err = services.SaveFileToDatabase(db, file, fileId, id, filePath, thumbnailPath)
+	// Setup thumbnail
+	thumbnailRepository := repositories.NewThumbnailRepository(db)
+	thumbnailUUID := uuid.New()
+	thumbnailRepository.Create(&repositories.Thumbnail{
+		ID:      thumbnailUUID,
+		OwnerId: user.ID,
+	})
+	thumbnailPath := path.Join(user.FolderPath, fmt.Sprintf("/thumbnail/%v.jpg", thumbnailUUID))
+	// Generate Thumbnail
+	go services.CreateAndSaveThumbnail(filePath, thumbnailPath, m, originalName, thumbnailUUID, thumbnailRepository)
+	err = services.SaveFileToDatabase(db, file, fileId, id, filePath, thumbnailUUID)
 	if err != nil {
 		return err
 	}

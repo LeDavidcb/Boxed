@@ -10,14 +10,14 @@ import (
 
 // File model represents the structure of the "files" table.
 type File struct {
-	ID            uuid.UUID `db:"id"`
-	OwnerID       uuid.UUID `db:"owner_id"`
-	OriginalName  string    `db:"original_name"`
-	StoragePath   string    `db:"storage_path"`
-	Size          int64     `db:"size"`
-	MimeType      string    `db:"mime_type"`
-	ThumbnailPath *string   `db:"thumbnail_path"`
-	CreatedAt     time.Time `db:"created_at"`
+	ID           uuid.UUID `db:"id"`
+	OwnerID      uuid.UUID `db:"owner_id"`
+	OriginalName string    `db:"original_name"`
+	StoragePath  string    `db:"storage_path"`
+	Size         int64     `db:"size"`
+	MimeType     string    `db:"mime_type"`
+	ThumbnailId  uuid.UUID `db:"thumbnail_id"`
+	CreatedAt    time.Time `db:"created_at"`
 }
 
 // FilesRepository interface exposes CRUD operations for files.
@@ -51,10 +51,10 @@ func (r *FilesRepo) Create(file *File) error {
 		file.ID = uuid.New()
 	}
 	query := `
-        INSERT INTO files (id, owner_id, original_name, storage_path, size, mime_type, thumbnail_path, created_at)
+        INSERT INTO files (id, owner_id, original_name, storage_path, size, mime_type, thumbnail_id, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err := r.db.Exec(context.Background(), query, file.ID, file.OwnerID, file.OriginalName, file.StoragePath,
-		file.Size, file.MimeType, file.ThumbnailPath, file.CreatedAt)
+		file.Size, file.MimeType, file.ThumbnailId, file.CreatedAt)
 	return err
 }
 
@@ -68,17 +68,17 @@ func (r *FilesRepo) Create(file *File) error {
 //   - (*File, error): A pointer to the file's metadata if found; otherwise, an error.
 func (r *FilesRepo) GetByID(id uuid.UUID) (*File, error) {
 	file := &File{}
-	query := `SELECT id, owner_id, original_name, storage_path, size, mime_type, thumbnail_path, created_at
+	query := `SELECT id, owner_id, original_name, storage_path, size, mime_type, thumbnail_id, created_at
               FROM files WHERE id = $1`
 	err := r.db.QueryRow(context.Background(), query, id).
 		Scan(&file.ID, &file.OwnerID, &file.OriginalName, &file.StoragePath, &file.Size,
-			&file.MimeType, &file.ThumbnailPath, &file.CreatedAt)
+			&file.MimeType, &file.ThumbnailId, &file.CreatedAt)
 	return file, err
 }
 
 // GetByOwnerID retrieves all files owned by a specific user ID.
 func (r *FilesRepo) GetByOwnerID(ownerID uuid.UUID) ([]File, error) {
-	query := `SELECT id, owner_id, original_name, storage_path, size, mime_type, thumbnail_path, created_at
+	query := `SELECT id, owner_id, original_name, storage_path, size, mime_type, thumbnail_id, created_at
               FROM files WHERE owner_id = $1`
 	rows, err := r.db.Query(context.Background(), query, ownerID)
 	if err != nil {
@@ -90,7 +90,7 @@ func (r *FilesRepo) GetByOwnerID(ownerID uuid.UUID) ([]File, error) {
 	for rows.Next() {
 		file := File{}
 		err := rows.Scan(&file.ID, &file.OwnerID, &file.OriginalName, &file.StoragePath, &file.Size,
-			&file.MimeType, &file.ThumbnailPath, &file.CreatedAt)
+			&file.MimeType, &file.ThumbnailId, &file.CreatedAt)
 		if err != nil {
 			return nil, err
 		}

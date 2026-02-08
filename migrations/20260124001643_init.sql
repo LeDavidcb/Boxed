@@ -9,8 +9,7 @@ CREATE TABLE users (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE refresh_tokens (
-  id UUID PRIMARY KEY,
+CREATE TABLE refresh_tokens ( id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   token_hash TEXT NOT NULL,
   expires_at TIMESTAMPTZ NOT NULL,
@@ -18,6 +17,12 @@ CREATE TABLE refresh_tokens (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE thumbnails (
+    id UUID PRIMARY KEY,
+    owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    original_name TEXT NOT NULL,
+    storage_path TEXT NOT NULL
+);
 CREATE TABLE files (
   id UUID PRIMARY KEY,
   owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -25,9 +30,10 @@ CREATE TABLE files (
   storage_path TEXT NOT NULL,
   size BIGINT NOT NULL,
   mime_type TEXT NOT NULL,
-  thumbnail_path TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
+  thumbnail_id UUID REFERENCES thumbnails(id),
+  created_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- +goose StatementEnd
 
 -- +goose Down
@@ -35,4 +41,5 @@ CREATE TABLE files (
 DROP TABLE IF EXISTS files;
 DROP TABLE IF EXISTS refresh_tokens;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS thumbnails;
 -- +goose StatementEnd
