@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/David/Boxed/internal/common/fn"
+	"github.com/David/Boxed/internal/common/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -136,7 +136,7 @@ func (r *RefreshTokensRepo) RegenerateToken(h string, tr *pgx.Tx) (*struct {
 	if err != nil {
 		return nil, err
 	}
-	hash, err := fn.GenerateRTHash(32)
+	hash, err := utils.GenerateRTHash(32)
 	if err != nil {
 		return nil, err
 	}

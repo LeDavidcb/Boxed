@@ -9,7 +9,6 @@ import (
 )
 
 // saveFile saves to the file system.
-//
 // Parameters:
 //   - fpath: The path where the file's going to be saved.
 //   - file: a pointer to the FileHeader, you could find this in a http request.

@@ -4,11 +4,9 @@ import (
 	"strings"
 
 	boxed "github.com/David/Boxed"
-	"github.com/David/Boxed/internal/auth/login"
-	"github.com/David/Boxed/internal/auth/refresh"
-	"github.com/David/Boxed/internal/auth/register"
-	"github.com/David/Boxed/internal/common/types"
-	"github.com/David/Boxed/internal/files"
+	auth "github.com/David/Boxed/internal/auth/controllers"
+	jwtMiddleware "github.com/David/Boxed/internal/auth/middleware"
+	files "github.com/David/Boxed/internal/files/controllers"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -20,19 +18,19 @@ func SetupControllers() *echo.Echo {
 	router := echo.New()
 
 	router.Use(middleware.RequestLogger())
-	router.GET("/auth/login", login.LoginController)
-	router.GET("/auth/register", register.RegisterController)
-	router.GET("/auth/refresh", refresh.RefreshToken)
+	router.GET("/auth/login", auth.LoginController)
+	router.GET("/auth/register", auth.RegisterController)
+	router.GET("/auth/refresh", auth.RefreshTokenController)
 
-	jwtMiddleware := types.NewJwtMiddleware(key, jwt.SigningMethodHS256)
+	jwtMiddleware := jwtMiddleware.NewJwtMiddleware(key, jwt.SigningMethodHS256)
 	validated := router.Group("/api") // Temporarily commented out
 	validated.Use(jwtMiddleware.Middleware)
-	validated.POST("/upload-file", files.SendFile)
-	validated.POST("/upload-files", files.SendFiles)
-	validated.GET("/get-file", files.GetFile)
-	validated.GET("/get-files", files.GetFiles)
-	validated.GET("/serve-file", files.ServeFile)
-	validated.DELETE("/delete-file", files.DeleteFile)
+	validated.POST("/upload-file", files.SendFileController)
+	validated.POST("/upload-files", files.SendFilesController)
+	validated.GET("/get-file", files.GetFileController)
+	validated.GET("/get-files", files.GetFilesController)
+	validated.GET("/serve-file", files.ServeFileController)
+	validated.DELETE("/delete-file", files.DeleteFileController)
 	return router
 
 }

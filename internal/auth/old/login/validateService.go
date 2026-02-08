@@ -6,7 +6,6 @@ import (
 	"time"
 
 	boxed "github.com/David/Boxed"
-	"github.com/David/Boxed/internal/common/fn"
 	"github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/repositories"
 	"github.com/golang-jwt/jwt/v5"

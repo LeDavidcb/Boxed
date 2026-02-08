@@ -6,7 +6,8 @@ import (
 	"time"
 
 	boxed "github.com/David/Boxed"
-	"github.com/David/Boxed/internal/common/types"
+	authTypes "github.com/David/Boxed/internal/auth/types"
+	commonTypes "github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/internal/common/utils"
 	"github.com/David/Boxed/repositories"
 	"github.com/golang-jwt/jwt/v5"
@@ -27,7 +28,7 @@ import (
 //
 // Errors:
 //   - Returns an error if user credentials do not match or if database access fails.
-func Validate(u *types.UserLoginRequest, c *pgxpool.Pool) (*types.LoginResponse, error) {
+func Validate(u *authTypes.UserLoginRequest, c *pgxpool.Pool) (*authTypes.LoginResponse, error) {
 	repo := repositories.NewUserRepo(c)
 	user, err := repo.GetByEmail(u.Email)
 	if err != nil {
@@ -37,7 +38,7 @@ func Validate(u *types.UserLoginRequest, c *pgxpool.Pool) (*types.LoginResponse,
 		return nil, err
 	}
 	// Generate the jwt
-	claims := &types.ResponseClaims{
+	claims := &commonTypes.ResponseClaims{
 		Name: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
@@ -69,5 +70,5 @@ func Validate(u *types.UserLoginRequest, c *pgxpool.Pool) (*types.LoginResponse,
 		return nil, err
 	}
 
-	return &types.LoginResponse{SignedJwt: sig, RefreshToken: hash}, nil
+	return &authTypes.LoginResponse{SignedJwt: sig, RefreshToken: hash}, nil
 }

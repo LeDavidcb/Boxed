@@ -5,7 +5,7 @@ import (
 
 	boxed "github.com/David/Boxed"
 	"github.com/David/Boxed/internal/auth/services"
-	"github.com/David/Boxed/internal/common/types"
+	"github.com/David/Boxed/internal/auth/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v5"
 )

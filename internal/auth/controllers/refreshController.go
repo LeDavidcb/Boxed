@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	boxed "github.com/David/Boxed"
+	"github.com/David/Boxed/internal/auth/services"
 	"github.com/David/Boxed/repositories"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v5"
@@ -21,7 +22,7 @@ import (
 // Errors:
 //   - 400 Bad Request if refresh token is invalid or expired.
 //   - 500 Internal Server Error for database or JWT generation failures.
-func RefreshToken(c *echo.Context) error {
+func RefreshTokenController(c *echo.Context) error {
 	// Get the refreshToken
 	rt := c.Request().Header.Get("refresh-token")
 	if rt == "" {
@@ -47,7 +48,7 @@ func RefreshToken(c *echo.Context) error {
 		return c.String(http.StatusBadRequest, "refresh-token is not valid or expired.")
 	}
 	// Get new JWT
-	sig, err := ReSignJwt(val.Useruuid)
+	sig, err := services.ReSignJwt(val.Useruuid)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error generating, try later")
 	}
