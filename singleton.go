@@ -44,7 +44,7 @@ func GetInstance() *singleton {
 			log.Fatal("BACKEND_PORT is empty")
 		}
 		jwtSecret := os.Getenv("JWT_SECRET")
-		if backendPortRaw == "" {
+		if jwtSecret == "" {
 			log.Fatal("JWT_SECRET is empty")
 		}
 		backendPort, err := strconv.Atoi(backendPortRaw)
