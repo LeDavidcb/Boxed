@@ -1,4 +1,4 @@
-package register
+package registerservices
 
 import (
 	"os"

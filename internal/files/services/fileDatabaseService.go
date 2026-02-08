@@ -1,4 +1,4 @@
-package files
+package services
 
 import (
 	"mime/multipart"
@@ -10,7 +10,7 @@ import (
 )
 
 // saveFileToDb will save the metadata into the database and return the corresponding id.
-func saveFileToDb(c *pgxpool.Pool, file *multipart.FileHeader, fid, uid uuid.UUID, fpath, tpath string) error {
+func SaveFileToDatabase(c *pgxpool.Pool, file *multipart.FileHeader, fid, uid uuid.UUID, fpath, tpath string) error {
 	mime := file.Header.Get("Content-Type")
 	originalName := file.Filename
 	fr := repositories.NewFilesRepo(c)

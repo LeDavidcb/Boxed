@@ -1,9 +1,10 @@
-package types
+package middleware
 
 import (
 	"net/http"
 	"strings"
 
+	"github.com/David/Boxed/internal/common/types"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v5"
 )
@@ -36,7 +37,7 @@ func (self *JwtMiddleware) Middleware(n echo.HandlerFunc) echo.HandlerFunc {
 			unparsedToken = t[1]
 		}
 		// Validate the token
-		token, err := jwt.ParseWithClaims(unparsedToken, &ResponseClaims{}, func(t *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(unparsedToken, &types.ResponseClaims{}, func(t *jwt.Token) (any, error) {
 			return []byte(self.Key), nil
 		})
 		if err != nil {

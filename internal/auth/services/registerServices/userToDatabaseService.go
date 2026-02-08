@@ -1,8 +1,9 @@
-package register
+package registerservices
 
 import (
 	"time"
 
+	"github.com/David/Boxed/internal/auth/types"
 	"github.com/David/Boxed/repositories"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,7 +19,7 @@ import (
 //
 // Returns:
 //   - error: An error if the user creation process (e.g., password hashing, folder creation, or database insertion) fails.
-func createUserDb(c *pgxpool.Pool, u *userRegisterRequest) error {
+func CreateUserInDatabase(c *pgxpool.Pool, u *types.UserRegisterRequest) error {
 	user := new(repositories.User)
 	user.ID = uuid.New()
 	user.Username = u.Nickname
