@@ -1,7 +1,7 @@
 # Boxed
 ### Boxed is a lightweight, very simple self-hosted file management system
 
-_This project is a work-in-progress. A rewrite is underway to improve and reorganize the project structure._
+_This project is a work-in-progress._
 
 ---
 ## Installation 
@@ -50,9 +50,9 @@ This project uses a [LICENSE](LICENSE) file. Please check the details before usi
   Enhance file metadata retrieval to include thumbnail IDs for compatible file types (e.g., videos, images) when accessed through relevant API endpoints.
 
 - [ ] **Frontend**
-  While this project is primarily a backend service, creating a default frontend would be valuable, similar to how the `Jellyfin` project operates. This would provide an out-of-the-box user interface for managing files. Additionally, with the [API documentation](./API_ROUTES.md), developers should find it straightforward to create custom frontends that consume these endpoints.
+  While this project is primarily a backend service, creating a default frontend would be valuable, similar to how the `Jellyfin` project operates. This would provide an out-of-the-box user interface for managing files. Additionally, with the [API documentation](), developers should find it straightforward to create custom frontends that consume these endpoints.
 
-- [ ] **Refactor**
-  Improve the current project structure to be more intuitive and inviting for contributors.
+- [x] ~**Refactor**~
+  ~Improve the current project structure to be more intuitive and inviting for contributors.~
 
 ---
