@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	boxed "github.com/David/Boxed"
@@ -40,6 +41,15 @@ func DeleteFileController(c *echo.Context) error {
 	if e := fileRepo.Delete(ui); e != nil {
 		c.String(http.StatusBadRequest, "Error while deleting the file, please try later.")
 		return fmt.Errorf("Error while deleting file: %v", e)
+	}
+	// Get Thumbnail path
+	tr := repositories.NewThumbnailRepository(boxed.GetInstance().DbConn)
+	t, err := tr.GetByID(f.ThumbnailId)
+	if err != nil {
+		log.Println("No thumnbail by this id:", f.ThumbnailId)
+	} else {
+		tr.DeleteByID(t.ID)
+		go services.DeleteFile(t.StoragePath)
 	}
 	go services.DeleteFile(f.StoragePath)
 	return c.NoContent(http.StatusOK)
