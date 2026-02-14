@@ -3,12 +3,14 @@ package types
 // Code errors
 const (
 	// Auth Related errors.
-	AuthTokenExpired = "AUTH_TOKEN_EXPIRED"
-	AuthTokenInvalid = "AUTH_TOKEN_INVALID"
-	AuthTokenMissing = "AUTH_TOKEN_MISSING"
+	AuthTokenExpired             = "AUTH_TOKEN_EXPIRED"
+	AuthTokenInvalid             = "AUTH_TOKEN_INVALID"
+	AuthTokenMissing             = "AUTH_TOKEN_MISSING"
+	AuthInvalidCredentials       = "AUTH_INVALID_CREDENTIALS"
+	RefreshTokenMissing          = "REFRESH_TOKEN_MISSING"
+	RefreshTokenExpiredOrInvalid = "REFRESH_TOKEN_NOT_VALID"
 
 	// Validation related errors.
-	AuthInvalidCredentials = "AUTH_INVALID_CREDENTIALS"
 	UserEmailAlreadyExists = "USER_EMAIL_ALREADY_EXISTS"
 
 	// File related errords.
@@ -19,7 +21,7 @@ const (
 
 	// Server generic errors.
 	InternalServerError = "INTERNAL_SERVER_ERROR"
-	DatabaseError       = "DATABASE_ERRORA"
+	DatabaseError       = "DATABASE_ERROR"
 	InvalidRequest      = "INVALID_REQUEST"
 	InvalidFormat       = "INVALID_FORMAT"
 )

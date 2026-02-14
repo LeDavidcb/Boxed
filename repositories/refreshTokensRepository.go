@@ -107,7 +107,7 @@ func (r *RefreshTokensRepo) GetByHashToken(h string) (*RefreshToken, error) {
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			// No rows found; handle differently
-			return nil, fmt.Errorf("refresh token not found for hash: %s", h)
+			return nil, fmt.Errorf("refresh token not found for hash: %s. More info: %w", h, err)
 		}
 		// Other database errors
 		log.Printf("Database error fetching token by hash: %v", err)
