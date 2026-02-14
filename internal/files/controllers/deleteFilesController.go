@@ -28,7 +28,7 @@ func DeleteFileController(c *echo.Context) error {
 			Code:    types.MissingFields,
 			Message: "`uuid` must be provided.",
 		}
-		c.JSON(http.StatusBadRequest, &e)
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 
 	conn := boxed.GetInstance().DbConn
@@ -40,7 +40,7 @@ func DeleteFileController(c *echo.Context) error {
 			Code:    types.InvalidFields,
 			Message: "`uuid` provided is not valid.",
 		}
-		c.JSON(http.StatusBadRequest, &e)
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	// get by id
 	f, e := fileRepo.GetByID(ui)
