@@ -38,8 +38,11 @@ func SendFileController(c *echo.Context) error {
 	}
 	claims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
 	if err != nil {
-		c.String(400, err.Error())
-		return echo.ErrBadRequest.Wrap(err)
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError, // Couldn't get jwt, so it's a middleware error.
+			Message: "Error while getting user from jwt, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
 	}
 	// Get the user
 	id, err := uuid.Parse(claims.Subject)
@@ -51,7 +54,6 @@ func SendFileController(c *echo.Context) error {
 		return c.JSON(http.StatusBadRequest, &e)
 	}
 	user, err := ur.GetByID(id)
-	// ??????????????????????????????
 
 	if err != nil {
 		var pge *pgconn.PgError
