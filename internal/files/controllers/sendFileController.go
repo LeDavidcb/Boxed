@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"mime"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"github.com/David/Boxed/internal/files/services"
 	"github.com/David/Boxed/repositories"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v5"
 )
 
@@ -24,11 +27,14 @@ import (
 func SendFileController(c *echo.Context) error {
 	db := boxed.GetInstance().DbConn
 	ur := repositories.NewUserRepo(db)
-	//fr := repositories.NewFilesRepo(db)
+
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.String(http.StatusBadRequest, "File must be provided.")
-		return echo.ErrBadRequest
+		e := &types.ErrorResponse{
+			Code:    types.MissingFields,
+			Message: "Multipart with an entry `file` must be provided.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	claims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
 	if err != nil {
@@ -38,11 +44,31 @@ func SendFileController(c *echo.Context) error {
 	// Get the user
 	id, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		c.String(400, err.Error())
-		return echo.ErrBadRequest.Wrap(err)
+		e := &types.ErrorResponse{
+			Code:    types.InvalidFields,
+			Message: "`uuid` provided is not valid.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	user, err := ur.GetByID(id)
+	// ??????????????????????????????
 
+	if err != nil {
+		var pge *pgconn.PgError
+		if errors.As(err, &pge) || errors.As(err, &pgx.ErrNoRows) {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceNotFound,
+				Message: fmt.Sprintf("Couldn't get any thumnbail with %v to delete.", id),
+			}
+			return c.JSON(http.StatusBadRequest, &em)
+		} else {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceDeleteFailed,
+				Message: fmt.Sprintf("Internal error while deleting thumnbail with id: %v", id),
+			}
+			return c.JSON(http.StatusInternalServerError, &em)
+		}
+	}
 	// metadata info
 	m := file.Header.Get("Content-Type")
 	typet, _ := mime.ExtensionsByType(m)
@@ -53,7 +79,11 @@ func SendFileController(c *echo.Context) error {
 	// Create the file to the os
 	err = services.SaveFile(filePath, file)
 	if err != nil {
-		return err
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError,
+			Message: "Error while trying to save a file to the server. Please try later.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
 	}
 	// Setup thumbnail
 	thumbnailRepository := repositories.NewThumbnailRepository(db)
@@ -67,7 +97,11 @@ func SendFileController(c *echo.Context) error {
 	go services.CreateAndSaveThumbnail(filePath, thumbnailPath, m, originalName, thumbnailUUID, thumbnailRepository)
 	err = services.SaveFileToDatabase(db, file, fileId, id, filePath, thumbnailUUID)
 	if err != nil {
-		return err
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError,
+			Message: "Error while trying to save a file to the database. Please try later.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
 	}
 
 	return c.NoContent(http.StatusCreated)
