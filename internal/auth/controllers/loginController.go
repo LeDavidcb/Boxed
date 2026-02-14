@@ -34,7 +34,7 @@ func LoginController(c *echo.Context) error {
 
 	if c.Request().Header.Get("Content-Type") != "application/json" {
 		e := &commonTypes.ErrorResponse{
-			Code:    commonTypes.InvalidRequest,
+			Code:    commonTypes.InvalidFormat,
 			Message: "The Content-Type request must be `application/json`",
 		}
 		return c.JSON(http.StatusUnsupportedMediaType, &e)
@@ -43,7 +43,7 @@ func LoginController(c *echo.Context) error {
 	err := echo.BindBody(c, &user)
 	if err != nil {
 		e := &commonTypes.ErrorResponse{
-			Code:    commonTypes.InvalidRequest,
+			Code:    commonTypes.MissingFields,
 			Message: "No body provided. Please provide a valid body for login process",
 		}
 		return c.JSON(http.StatusBadRequest, &e)

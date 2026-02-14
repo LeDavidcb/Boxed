@@ -29,7 +29,7 @@ func RegisterController(c *echo.Context) error {
 	var user types.UserRegisterRequest
 	if c.Request().Header.Get("Content-Type") != "application/json" {
 		e := &commonTypes.ErrorResponse{
-			Code:    commonTypes.InvalidRequest,
+			Code:    commonTypes.InvalidFormat,
 			Message: "The Content-Type request must be `application/json`",
 		}
 		return c.JSON(http.StatusUnsupportedMediaType, &e)
@@ -38,14 +38,14 @@ func RegisterController(c *echo.Context) error {
 
 	if err != nil {
 		e := &commonTypes.ErrorResponse{
-			Code:    commonTypes.InvalidRequest,
+			Code:    commonTypes.InvalidFormat,
 			Message: "No body provided. Please provide a valid body for register process",
 		}
 		return c.JSON(http.StatusBadRequest, &e)
 	}
 	if user.Nickname == "" || user.Email == "" || user.Password == "" {
 		e := &commonTypes.ErrorResponse{
-			Code:    commonTypes.InvalidFormat,
+			Code:    commonTypes.MissingFields,
 			Message: "All properties (Nickname, Email and Password) MUST be provided.",
 		}
 		return c.JSON(http.StatusBadRequest, &e)
