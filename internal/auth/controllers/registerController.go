@@ -1,12 +1,14 @@
 package controllers
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	boxed "github.com/David/Boxed"
 	registerservices "github.com/David/Boxed/internal/auth/services/registerServices"
 	"github.com/David/Boxed/internal/auth/types"
+	commonTypes "github.com/David/Boxed/internal/common/types"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v5"
 )
@@ -26,20 +28,44 @@ func RegisterController(c *echo.Context) error {
 	var con *pgxpool.Pool = boxed.GetInstance().DbConn
 	var user types.UserRegisterRequest
 	if c.Request().Header.Get("Content-Type") != "application/json" {
-		return c.NoContent(http.StatusUnsupportedMediaType)
+		e := &commonTypes.ErrorResponse{
+			Code:    commonTypes.InvalidRequest,
+			Message: "The Content-Type request must be `application/json`",
+		}
+		return c.JSON(http.StatusUnsupportedMediaType, &e)
 	}
 	err := echo.BindBody(c, &user)
+
 	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("Error at the provided body: %v", err))
-		return echo.NewHTTPError(http.StatusBadRequest, "")
+		e := &commonTypes.ErrorResponse{
+			Code:    commonTypes.InvalidRequest,
+			Message: "No body provided. Please provide a valid body for register process",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	if user.Nickname == "" || user.Email == "" || user.Password == "" {
-		c.String(http.StatusBadRequest, fmt.Sprintf("Error at the provided body: %v", err))
-		return c.NoContent(http.StatusBadRequest)
+		e := &commonTypes.ErrorResponse{
+			Code:    commonTypes.InvalidFormat,
+			Message: "All properties (Nickname, Email and Password) MUST be provided.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	if err := registerservices.CreateUserInDatabase(con, &user); err != nil {
-		c.String(http.StatusInternalServerError, "Couldn't create the user.")
-		return err
+		var pge *pgconn.PgError
+		if errors.As(err, &pge) {
+			e := &commonTypes.ErrorResponse{
+				Code:    commonTypes.UserEmailAlreadyExists,
+				Message: "This email already exists in the database.",
+			}
+			return c.JSON(http.StatusBadRequest, &e)
+		}
+
+		e := &commonTypes.ErrorResponse{
+			Code:    commonTypes.InternalServerError,
+			Message: "Error while processing register, Please try again later.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
+
 	}
 	return c.NoContent(http.StatusCreated)
 }
