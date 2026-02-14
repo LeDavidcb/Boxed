@@ -22,7 +22,8 @@ const (
 	// Server generic errors.
 	InternalServerError = "INTERNAL_SERVER_ERROR"
 	DatabaseError       = "DATABASE_ERROR"
-	InvalidRequest      = "INVALID_REQUEST"
+	InvalidFields       = "INVALID_FIELDS"
+	MissingFields       = "MISSING_FIELDS"
 	InvalidFormat       = "INVALID_FORMAT"
 )
 
