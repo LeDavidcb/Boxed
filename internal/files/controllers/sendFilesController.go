@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"mime"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"github.com/David/Boxed/internal/files/services"
 	"github.com/David/Boxed/repositories"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v5"
 )
 
@@ -25,33 +28,60 @@ func SendFilesController(c *echo.Context) error {
 
 	claims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
 	if err != nil {
-		c.String(400, err.Error())
-		return echo.ErrBadRequest.Wrap(err)
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError, // Couldn't get jwt, so it's a middleware error.
+			Message: "Error while getting user from jwt, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
 	}
 
 	// Get the user
 	id, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		c.String(400, err.Error())
-		return echo.ErrBadRequest.Wrap(err)
+		e := &types.ErrorResponse{
+			Code:    types.InvalidFields,
+			Message: "`uuid` provided is not valid.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	user, err := ur.GetByID(id)
 	if err != nil {
-		return echo.ErrInternalServerError.Wrap(err)
+		var pge *pgconn.PgError
+		if errors.As(err, &pge) || errors.As(err, &pgx.ErrNoRows) {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceNotFound,
+				Message: fmt.Sprintf("Couldn't get any thumnbail with %v to delete.", id),
+			}
+			return c.JSON(http.StatusBadRequest, &em)
+		} else {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceDeleteFailed,
+				Message: fmt.Sprintf("Internal error while deleting thumnbail with id: %v", id),
+			}
+			return c.JSON(http.StatusInternalServerError, &em)
+		}
 	}
 
 	// Process multiple files
 	form, err := c.MultipartForm()
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid form data.")
-		return echo.ErrBadRequest.Wrap(err)
+		e := &types.ErrorResponse{
+			Code:    types.InvalidFormat,
+			Message: "body must be a MultipartForm",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 
 	files := form.File["files"]
 	if len(files) == 0 {
-		c.String(http.StatusBadRequest, "No files provided.")
-		return echo.ErrBadRequest
+		e := &types.ErrorResponse{
+			Code:    types.MissingFields,
+			Message: "Multipart with one or many `files` entries must be provided.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
+	// Track of files that failed to update.
+	var failed []string
 	// Iterate over files
 	for _, file := range files {
 		m := file.Header.Get("Content-Type")
@@ -79,10 +109,16 @@ func SendFilesController(c *echo.Context) error {
 		go services.CreateAndSaveThumbnail(filePath, thumbnailPath, m, originalName, thumbnailUUID, thumbnailRepository)
 		err = services.SaveFileToDatabase(db, file, fileId, id, filePath, thumbnailUUID)
 		if err != nil {
-			c.Logger().Error(err.Error())
+			failed = append(failed, file.Filename)
 			continue
 		}
 	}
-
+	if len(failed) > 0 {
+		e := &types.ErrorResponse{
+			Code:    types.FileUploadFailed,
+			Message: fmt.Sprintf("Some files failed to upload: %v \n", failed),
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
+	}
 	return c.NoContent(http.StatusCreated)
 }
