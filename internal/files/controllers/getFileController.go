@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	boxed "github.com/David/Boxed"
+	"github.com/David/Boxed/internal/common/types"
 	"github.com/David/Boxed/repositories"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v5"
 )
 
@@ -19,20 +23,38 @@ import (
 func GetFileController(c *echo.Context) error {
 	id := c.Request().Header.Get("uuid")
 	if id == "" {
-		c.String(http.StatusBadRequest, "No uuid was provided.")
-		return fmt.Errorf("No uuid file was provided.")
+		e := &types.ErrorResponse{
+			Code:    types.MissingFields,
+			Message: "`uuid` must be provided.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	conn := boxed.GetInstance().DbConn
 	fileRepo := repositories.NewFilesRepo(conn)
 	ui, e := uuid.Parse(id)
 	if e != nil {
-		c.String(http.StatusBadRequest, "The uuid provided was not valid.")
-		return fmt.Errorf("Bad uuid. %v", e)
+		e := &types.ErrorResponse{
+			Code:    types.InvalidFields,
+			Message: "`uuid` provided is not valid.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	f, e := fileRepo.GetByID(ui)
 	if e != nil {
-		c.String(http.StatusBadRequest, "Not Found")
-		return e
+		var pge *pgconn.PgError
+		if errors.As(e, &pge) || errors.As(e, &pgx.ErrNoRows) {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceNotFound,
+				Message: fmt.Sprintf("Couldn't get any file with %v to serve.", id),
+			}
+			return c.JSON(http.StatusBadRequest, &em)
+		} else {
+			em := &types.ErrorResponse{
+				Code:    types.ResourceNotFound,
+				Message: fmt.Sprintf("Internal error while getting file with id: %v", id),
+			}
+			return c.JSON(http.StatusInternalServerError, &em)
+		}
 	}
 	return c.JSON(http.StatusOK, f)
 }

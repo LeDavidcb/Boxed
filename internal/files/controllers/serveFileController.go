@@ -22,28 +22,53 @@ func ServeFileController(c *echo.Context) error {
 	// Extract file UUID from path parameter
 	id := c.Request().Header.Get("uuid")
 	if id == "" {
-		c.String(http.StatusBadRequest, "No uuid was provided.")
-		return fmt.Errorf("No uuid file was provided.")
+		e := &types.ErrorResponse{
+			Code:    types.MissingFields,
+			Message: "You must provide a `uuid` entry to serve file.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		c.String(http.StatusBadRequest, "The uuid provided was not valid.")
-		return fmt.Errorf("Bad uuid. %v", err)
+		e := &types.ErrorResponse{
+			Code:    types.InvalidFields,
+			Message: "`uuid` provided is not valid.",
+		}
+		return c.JSON(http.StatusBadRequest, &e)
 	}
 	// Verify user authorization
 	userClaims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
 	if err != nil {
-		return c.NoContent(http.StatusUnauthorized)
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError, // Couldn't get jwt, so it's a middleware error.
+			Message: "Error while getting user from jwt, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
 	}
-	userID, _ := uuid.Parse(userClaims.Subject)
+	userID, err := uuid.Parse(userClaims.Subject)
+	if err != nil {
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError,
+			Message: "Internal error while parsing user uuid, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
+	}
 	// Query file details
 	fileRepo := repositories.NewFilesRepo(boxed.GetInstance().DbConn)
 	file, err := fileRepo.GetByID(uid)
-	if file.OwnerID != userID {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied"})
-	}
 	if err != nil {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "file not found"})
+		e := &types.ErrorResponse{
+			Code:    types.ResourceNotFound,
+			Message: fmt.Sprintf("Couldn't get any file with uuid: %v", uid.String()),
+		}
+		return c.JSON(http.StatusBadRequest, &e)
+	}
+	if file.OwnerID != userID {
+		e := &types.ErrorResponse{
+			Code:    types.WrongOwner,
+			Message: "This user don't own this resource.",
+		}
+		return c.JSON(http.StatusForbidden, &e)
 	}
 	// Serve the file
 	return c.File(file.StoragePath)
