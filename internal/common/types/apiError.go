@@ -9,6 +9,7 @@ const (
 	AuthInvalidCredentials       = "AUTH_INVALID_CREDENTIALS"
 	RefreshTokenMissing          = "REFRESH_TOKEN_MISSING"
 	RefreshTokenExpiredOrInvalid = "REFRESH_TOKEN_NOT_VALID"
+	WrongOwner                   = "WRONG_OWNER"
 
 	// Validation related errors.
 	UserEmailAlreadyExists = "USER_EMAIL_ALREADY_EXISTS"

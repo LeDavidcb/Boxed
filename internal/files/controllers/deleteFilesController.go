@@ -42,6 +42,23 @@ func DeleteFileController(c *echo.Context) error {
 		}
 		return c.JSON(http.StatusBadRequest, &e)
 	}
+	// Verify user authorization
+	userClaims, err := echo.ContextGet[*types.ResponseClaims](c, "user")
+	if err != nil {
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError, // Couldn't get jwt, so it's a middleware error.
+			Message: "Error while getting user from jwt, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
+	}
+	userID, err := uuid.Parse(userClaims.Subject)
+	if err != nil {
+		e := &types.ErrorResponse{
+			Code:    types.InternalServerError,
+			Message: "Internal error while parsing user uuid, please try again.",
+		}
+		return c.JSON(http.StatusInternalServerError, &e)
+	}
 	// get by id
 	f, e := fileRepo.GetByID(ui)
 	if e != nil {
@@ -74,6 +91,14 @@ func DeleteFileController(c *echo.Context) error {
 	if err != nil {
 		log.Println("No thumnbail by this id:", f.ThumbnailId)
 	} else {
+		// Check if user owns this resource.
+		if f.OwnerID != userID {
+			em := &types.ErrorResponse{
+				Code:    types.WrongOwner,
+				Message: "This user don't own this file.",
+			}
+			return c.JSON(http.StatusForbidden, &em)
+		}
 		err := tr.DeleteByID(t.ID)
 		if err != nil {
 			var pge *pgconn.PgError
