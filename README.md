@@ -61,9 +61,9 @@ This project uses a [LICENSE](LICENSE) file. Please check the details before usi
   ~Define a consistent response format across the repository (e.g. success, error, metadata) to improve predictability.~
   Mostly done, just have to documentate errors.
 
-- [ ] **Create a CLI tool for `.env` management**  
-  Build a CLI utility to initialize and update `.env` files without manual editing.
+- [x] ~**Create a CLI (Coommand line interface) tool for `.env` management**  ~
+  ~Build a CLI utility to initialize and update `.env` files without manual editing.~
 
-- [ ] **Add a Makefile for easier server setup**  
-  Provide common commands (build, run, test, etc) to facilitate startup.
+- [x] ~**Add a Makefile for easier server setup**~
+  ~Provide common commands (build, run, test, etc) to facilitate startup.~
 
