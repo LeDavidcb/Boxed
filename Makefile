@@ -10,7 +10,13 @@ MAIN_EXECUTABLE=$(BUILD_DIR)/api
 MIGRATIONS_DIR=migrations
 
 # Dependencies
-check-deps:
+setup-env:
+	@if [ ! -f $(ENV_FILE) ]; then \
+	  echo ".env not found. Running envcli to generate it..."; \
+	  go run cmd/cli/envcli.go || { echo "Failed to generate .env."; exit 1; }; \
+	fi
+
+check-deps: setup-env
 	@command -v node >/dev/null 2>&1 || { echo "Node.js is not installed."; exit 1; }
 	@command -v npm >/dev/null 2>&1 || { echo "npm is not installed."; exit 1; }
 	@command -v go >/dev/null 2>&1 || { echo "Go compiler is not installed."; exit 1; }
@@ -38,10 +44,6 @@ run: build
 	  [nN]*) echo "Skipping migrations." ;; \
 	  *) echo "Invalid input. Aborting."; exit 1 ;; \
 	esac
-	@if [ ! -f $(ENV_FILE) ]; then \
-	  echo "$(ENV_FILE) not found. Running envcli to generate it..."; \
-	  $(ENVCLI) || { echo "Failed to run envcli."; exit 1; }; \
-	fi;
 	@echo "Running the project..."
 	@./$(MAIN_EXECUTABLE)
 
