@@ -15,6 +15,7 @@ check-deps:
 	@command -v npm >/dev/null 2>&1 || { echo "npm is not installed."; exit 1; }
 	@command -v go >/dev/null 2>&1 || { echo "Go compiler is not installed."; exit 1; }
 	@command -v ffmpeg >/dev/null 2>&1 || { echo "FFmpeg is not installed."; exit 1; }
+	@go mod tidy
 	@echo "All dependencies are installed."
 
 # Build command

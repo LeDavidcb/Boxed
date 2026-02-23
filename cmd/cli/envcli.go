@@ -13,6 +13,7 @@ import (
 type EnvStruct struct {
 	DBUser     string
 	DBPassword string
+	DBName     string
 	DBhost     string
 	DBPort     string
 	BPort      string
@@ -33,6 +34,14 @@ func main() {
 	input, err = reader.ReadString('\n')
 	logerr(err)
 	env.DBPassword = strings.TrimSpace(input)
+
+	fmt.Print("Database name (Default: Boxed): ")
+	input, err = reader.ReadString('\n')
+	logerr(err)
+	env.DBName = strings.TrimSpace(input)
+	if env.DBName == "" {
+		env.DBName = "Boxed"
+	}
 
 	fmt.Print("database host (Default: localhost): ")
 	input, err = reader.ReadString('\n')
@@ -81,10 +90,10 @@ func main() {
 	}
 
 	// Print struct with field names and values
-	s := fmt.Sprintf(`DB_URL=postgresql://%v:%v@%v:%v/
+	s := fmt.Sprintf(`DB_URL=postgresql://%v:%v@%v:%v/%v
 BACKEND_PORT=%v
 FOLDER_PATH=%v
-JWT_SECRET=%v`, env.DBUser, env.DBPassword, env.DBhost, env.DBPort, env.BPort, env.FolderPath, env.JWTSecret)
+JWT_SECRET=%v`, env.DBUser, env.DBPassword, env.DBhost, env.DBPort, env.DBName, env.BPort, env.FolderPath, env.JWTSecret)
 
 	// Create or overwrite the .env file
 	file, err := os.Create(".env") // This will truncate the file if it already exists
@@ -100,6 +109,7 @@ JWT_SECRET=%v`, env.DBUser, env.DBPassword, env.DBhost, env.DBPort, env.BPort, e
 		return
 	}
 	fmt.Println(".env file has been successfully replaced with new content!")
+
 }
 
 func logerr(err error) {
