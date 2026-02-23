@@ -2,10 +2,6 @@
 
 # Boxed
 ### Boxed is a lightweight, very simple self-hosted file management system
-
-![Go Version](https://img.shields.io/github/go-mod/go-version/David/Boxed)
-![License](https://img.shields.io/github/license/David/Boxed)
-
 _This project is a work-in-progress._
 
 ---
